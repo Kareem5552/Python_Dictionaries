@@ -1,49 +1,48 @@
-# messy dict (some missing keys, inconsistent casing)
+"""
+Exercise 3 – Medium: Normalize + Safe Add + Simple Flatten
+
+Starting data (messy keys):
 raw_contacts = {
-    "Alice Smith ": {"email": "alice@work.com", "phone": "555-1234", "active": True},
-    "bob": {"email": "bob@gmail.com"},
-    "Charlie": {"email": "charlie@school.edu", "phone": "555-9999"}
+    " Alice ": {"email": "alice@work.com"},
+    "bob jones": {"email": "bob@gmail.com"},
+    "Bob Jones ": {"phone": "555-9999"}
 }
 
-# Tasks:
-# 1. Normalize all keys: lowercase + strip spaces (create new dict)
-# 2. For every contact, use .setdefault() to add "active": True if missing
-# 3. Add a new contact "yourname" (use your real or fake name) with email and phone
-# 4. Flatten all contacts so each person has only their email at top level
-#    Final flat dict: {'alice smith': 'alice@work.com', 'bob': '...', ...}
-# 5. Print a nice report:
-#    - Number of active contacts
-#    - List of all emails (formatted nicely)
-#    - Total contacts after flattening
+Tasks:
+1. Normalize keys: lowercase + strip spaces (create new dict)
+   → If duplicate after normalize → keep the first one, add missing keys from second
+2. Add "active": True to every contact if missing
+3. Flatten each contact to just their email (or "N/A" if missing)
+4. Print final flat dict and total number of contacts
+"""
 
-#1 
+# Solution
+raw_contacts = {
+    " Alice ": {"email": "alice@work.com"},
+    "bob jones": {"email": "bob@gmail.com"},
+    "Bob Jones ": {"phone": "555-9999"}
+}
 
+# 1. Normalize + merge duplicates
 cleaned_contacts = {}
 for name, info in raw_contacts.items():
     new_name = name.strip().lower()
-    cleaned_contacts[new_name] = info
-#2
+    if new_name in cleaned_contacts:
+        existing = cleaned_contacts[new_name]
+        for k, v in info.items():
+            if k not in existing:
+                existing[k] = v
+    else:
+        cleaned_contacts[new_name] = info.copy()
 
-for name, info in cleaned_contacts.items():
-    info.setdefault("active", True)
-#3
-
-cleaned_contacts["yourname"] = {"email": "yourname@example.com", "phone": "555-0000"}
-
-#4
-
-nested_emails = {}
-for name, info in cleaned_contacts.items():
-    nested_emails[name] = info["email"]
-    
-#5
-active_count = 0
+# 2. Add "active": True if missing
 for info in cleaned_contacts.values():
-    if info["active"]:
-        active_count += 1
+    info.setdefault("active", True)
 
-print(f"Number of active contacts: {active_count}")
-print("List of all emails:")
-for email in nested_emails.values():
-    print(f" - {email}")
-print(f"Total contacts after flattening: {len(nested_emails)}") 
+# 3. Flatten to emails only
+flat_emails = {name: info.get("email", "N/A") for name, info in cleaned_contacts.items()}
+
+# 4. Print result
+print("Final flat emails:")
+print(flat_emails)
+print("Total contacts:", len(flat_emails))
